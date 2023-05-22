@@ -39,7 +39,7 @@ void ElementarElement::Move()
 {
 	Vx += Wx * dt;
 	Vy += Wy * dt;
-	Vz = Wz * dt;
+	Vz += Wz * dt;
 
 	x += Vx * dt;
 	y += Vy * dt;
