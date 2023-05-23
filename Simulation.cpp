@@ -10,7 +10,7 @@ Simulation::Simulation(int n)
 
 void Simulation::WindowInteraction()
 {
-    sf::RenderWindow window(sf::VideoMode(WindowSize[0], WindowSize[1]), "Simulation");
+    sf::RenderWindow window(sf::VideoMode(screenwidth, screenheight), "Simulation");
     sf::Texture T;
     sf::Event event;
     T.create(window.getSize().x, window.getSize().y);
@@ -22,8 +22,8 @@ void Simulation::WindowInteraction()
 	Quaternion camerarotation(Quaternion(1, 0, 0, 0).normalized());
 	Quaternion temprotation(0, 0, 0, 0);
 
-	int oldMouseX = WindowSize[0] / 2;
-	int oldMouseY = WindowSize[1] / 2;
+	int oldMouseX = screenwidth / 2;
+	int oldMouseY = screenheight / 2;
 	int dMouseX;
 	int dMouseY;
 
@@ -91,7 +91,7 @@ void Simulation::WindowInteraction()
 
         for (auto element = ElementList.begin(); element != ElementList.end(); element++)
         {
-            ///element->Cout();
+            //element->Cout();
             element->Move();
 
         }
@@ -122,13 +122,8 @@ void Simulation::WindowInteraction()
 
         for (auto element = ElementList.begin(); element != ElementList.end(); element++)
         {
-            ///std::cout << "**" << std::endl;
-            element->draw(window);
+            element->Draw(window);
         }
-        /// <summary>
-        /// Пересчет на камеру
-        /// </summary>
-		/// 
         if (t % UpdateFrames == 0)
         {
             T.update(window);
@@ -144,25 +139,58 @@ void Simulation::WindowInteraction()
 void Simulation::CreationElements(float UpdateFrames, int N)
 {
 
-    std::seed_seq seed_{ time(NULL) };
-    std::mt19937 mt(seed_);
-    std::uniform_real_distribution<> X(SpawnBorderEpsillon[0], WindowSize[0] - SpawnBorderEpsillon[0]);
-    std::uniform_real_distribution<> Y(SpawnBorderEpsillon[1], WindowSize[1] - SpawnBorderEpsillon[1]);
-	std::uniform_real_distribution<> Z(SpawnBorderEpsillon[1], WindowSize[1] - SpawnBorderEpsillon[1]);
-    std::uniform_real_distribution<> Vx(0, 1);
-    std::uniform_real_distribution<> Vy(0, 1);
-	std::uniform_real_distribution<> Vz(0, 1);
-    std::uniform_real_distribution<> M(10, 250);
+    
 
-    for (int i = 0; i < N; ++i) {
-        ElementList.push_back(ElementarElement(X(mt), Y(mt), Z(mt), UpdateFrames));
+    int a = 2;
+    std::cout << "Want you turn on auto regime of generation? (1|0)" << std::endl;
+    std::cin >> a;
 
+    if (a == 1) {
+
+        
+        std::seed_seq seed_{ time(NULL) };
+        std::mt19937 mt(seed_);
+        std::uniform_real_distribution<> X(SpawnBorderEpsillon[0], screenwidth - SpawnBorderEpsillon[0]);
+        std::uniform_real_distribution<> Y(SpawnBorderEpsillon[1], screenheight - SpawnBorderEpsillon[1]);
+        std::uniform_real_distribution<> Z(SpawnBorderEpsillon[1], screenheight - SpawnBorderEpsillon[1]);
+        std::uniform_real_distribution<> Vx(0, 1);
+        std::uniform_real_distribution<> Vy(0, 1);
+        std::uniform_real_distribution<> Vz(0, 1);
+        std::uniform_real_distribution<> M(10, 250);
+
+        std::cout << "W|S - camera_movement, Q|R - rotation of camera, ESC - exit" << std::endl;
+        for (int i = 0; i < N; ++i) {
+            ElementList.push_back(ElementarElement(X(mt), Y(mt), Z(mt), UpdateFrames));
+
+        }
+        for (auto element = ElementList.begin(); element != ElementList.end(); ++element) {
+
+            element->Starting_conditions_for_V(Vx(mt), Vy(mt), Vz(mt));
+            element->Starting_conditions_for_M(M(mt));
+
+        }
     }
-    for (auto element = ElementList.begin(); element != ElementList.end(); ++element) {
+    else {
+        std::cout << "Now you will be enter for EACH element information" << std::endl;
+        std::cout << "7 number : x y z, Vx, Vy, Vz, mass" << std::endl;
 
-        element->Starting_conditions_for_V(Vx(mt), Vy(mt), Vz(mt));
-        element->Starting_conditions_for_M(M(mt));
+        double x, y, z;
+        double vx[10000]{}, vy[10000]{}, vz[10000]{};
+        double mass[10000]{};
 
+        for (int i = 0; i < N; ++i) {
+            std::cin >> x >> y >> z>> vx[i] >> vy[i] >> vz[i] >> mass[i];
+            ElementList.push_back(ElementarElement(x, y, z, UpdateFrames));
+        }
+        int k = 0;
+        for (auto element = ElementList.begin(); element != ElementList.end(); ++element) {
+
+            element->Starting_conditions_for_V(vx[k], vy[k], vz[k]);
+            element->Starting_conditions_for_M(mass[k]);
+            k++;
+
+        }
+        std::cout << "W|S - camera_movement, Q|R - rotation of camera, ESC - exit" << std::endl;
     }
 }
 
